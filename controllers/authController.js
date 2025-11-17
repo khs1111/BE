@@ -44,7 +44,7 @@ const authController = {
       // (4) 없으면 회원가입
       if (!user) {
         const userId = await User.createUser({
-          oauth_id: google_id,
+          google_id,
           provider: 'google',
           email,
           name,
