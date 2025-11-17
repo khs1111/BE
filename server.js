@@ -10,7 +10,10 @@ import { connectToModelServer } from "./models/ws_Model.js";
 import authRoutes from "./routes/authRoutes.js";
 import mypageRoutes from "./routes/mypageRoutes.js";
 import motionRoutes from "./routes/motionRoutes.js";
+import calendarRoutes from "./routes/calendarRoutes.js";
 import swaggerSetup from "./swagger/swagger.js";
+import babyinfoRoutes from "./routes/babyinfoRoutes.js";
+import babyinfofixRoutes from "./routes/babyinfofixRoutes.js";
 
 dotenv.config();
 
@@ -22,7 +25,9 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/mypage", mypageRoutes);
 app.use("/motion", motionRoutes);
-
+app.use("/calendar", calendarRoutes);
+app.use("/baby", babyinfoRoutes);
+app.use("/babyfix", babyinfofixRoutes);
 
 // Swagger setup
 swaggerSetup(app);
