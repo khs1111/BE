@@ -2,50 +2,72 @@
 import db from '../config/db.js';
 
 const Record = {
-  // 2주차: 수면 기록 생성
-  create: async (recordData) => {
-    const { user_id, sleep_start, sleep_end, movement_level } = recordData;
+  /**
+   * 수면 기록 생성
+   */
+  create: async ({
+    user_id,
+    sleep_start,
+    sleep_end,
+    video_url = null,
+    total_sleeptime = null,
+  }) => {
     const sql = `
-      INSERT INTO baby_records (user_id, sleep_start, sleep_end, movement_level, created_at)
-      VALUES (?, ?, ?, ?, NOW())
+      INSERT INTO baby_records
+      (user_id, sleep_start, sleep_end, video_url, total_sleeptime, created_at)
+      VALUES (?, ?, ?, ?, ?, NOW())
     `;
+
     const [result] = await db.query(sql, [
       user_id,
       sleep_start,
       sleep_end,
-      movement_level,
+      video_url,
+      total_sleeptime,
     ]);
-    return { id: result.insertId, ...recordData };
+
+    return {
+      id: result.insertId,
+      user_id,
+      sleep_start,
+      sleep_end,
+      video_url,
+      total_sleeptime,
+    };
   },
 
-  // 3주차: 사용자별 수면 기록 조회 (미리 구현해두면 좋음)
-  findByUserId: async (userId) => {
+  /**
+   * 가장 최근 수면 기록 1개 조회 (리포트 타입 1)
+   */
+  findLatestByUserId: async (userId) => {
     const sql = `
       SELECT *
       FROM baby_records
       WHERE user_id = ?
-      ORDER BY created_at DESC
+      ORDER BY sleep_start DESC
+      LIMIT 1
     `;
     const [rows] = await db.query(sql, [userId]);
-    return rows;
+    return rows[0] || null;
   },
 
-  // 4주차: AI 연동용 - 최근 N개 기록 조회 (일단 같이 남겨둘게)
-  findRecentByUserId: async (userId, limit = 5) => {
+  /**
+   * 날짜 범위 전체 수면 기록 조회 (리포트 타입 2)
+   * start_date, end_date: 'YYYY-MM-DD'
+   * → start_date 00:00:00 ~ end_date 23:59:59
+   */
+  findByDateRange: async (userId, start_date, end_date) => {
     const sql = `
-      SELECT sleep_start, sleep_end, movement_level
+      SELECT *
       FROM baby_records
       WHERE user_id = ?
-      ORDER BY sleep_start DESC
-      LIMIT ?
+      AND sleep_start >= ?
+      AND sleep_end < DATE_ADD(?, INTERVAL 1 DAY)
+      ORDER BY sleep_start ASC
     `;
-    const [rows] = await db.query(sql, [userId, limit]);
+    const [rows] = await db.query(sql, [userId, start_date, end_date]);
     return rows;
   },
 };
 
 export default Record;
-// user_id: 유저 고유 id
-// sleep_start: 수면 측정 시작
-// sleep_end: 수면 측정 종료
-// movement_level: 움직임 정도
