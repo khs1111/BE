@@ -16,6 +16,7 @@ import recordRoutes from "./routes/recordRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import eventLogRoutes from "./routes/eventRoutes.js";
 import graphRoutes from "./routes/graphRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/api/records", recordRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/eventlog", eventLogRoutes);
 app.use("/api/graph", graphRoutes);
+app.use("/api/notify", notificationRoutes);
 
 // Swagger setup
 swaggerSetup(app);
