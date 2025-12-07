@@ -1,66 +1,57 @@
 // controllers/notificationController.js
 
-import admin from "../config/fcm.js"; // FCM 설정 파일
-import User from "../models/userModel.js";
+// 날짜/시간 포맷 함수
+function formatTimeToKorean(date) {
+  const d = new Date(date);
+  return d.toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }); // 예: "오후 9:14"
+}
 
-// 오전/오후 시간 변환
-const formatKoreanTime = (isoString) => {
-  const date = new Date(isoString);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? "오후" : "오전";
-  const h = hours % 12 || 12;
+function formatDateToKorean(date) {
+  const d = new Date(date);
+  return d.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }); // 예: "2025년 12월 3일"
+}
 
-  return `${ampm} ${h}:${minutes.toString().padStart(2, "0")}`;
-};
-
-// 2025-12-02 → 2025년 12월 2일
-const formatKoreanDate = (isoString) => {
-  const d = new Date(isoString);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-};
-
-export const sendNotification = async (req, res) => {
+export const sendEventNotification = async (req, res) => {
   try {
-    const { user_id, event_type, event_time } = req.body;
+    const { event_type, event_time } = req.body;
 
-    if (!user_id || !event_type || !event_time) {
-      return res.status(400).json({ message: "필수 값이 없습니다." });
+    if (!event_type || !event_time) {
+      return res.status(400).json({ message: "event_type, event_time이 필요합니다." });
     }
 
-    const user = await User.findById(user_id);
-    if (!user || !user.fcm_token) {
-      return res.status(404).json({ message: "사용자 또는 FCM 토큰 없음" });
+    // 메시지 변환
+    const timeText = formatTimeToKorean(event_time);
+    const dateText = formatDateToKorean(event_time);
+
+    let alertText = "";
+
+    if (event_type === "fall") {
+      alertText = `${dateText} ${timeText} 아기가 넘어짐이 감지되었어요.`;
+    } else if (event_type === "movement") {
+      alertText = `${dateText} ${timeText} 아기의 뒤척임이 감지되었어요.`;
+    } else {
+      alertText = `${dateText} ${timeText} 이벤트(${event_type})가 발생했어요.`;
     }
 
-    const prettyTime = formatKoreanTime(event_time);
-    const prettyDate = formatKoreanDate(event_time);
-
-    const title =
-      event_type === "fall"
-        ? "아기가 낙상 위험 상태입니다"
-        : "아기 움직임이 감지되었습니다";
-
-    const body =
-      `${prettyDate} ${prettyTime}\n` +
-      `${event_type === "fall" ? "낙상" : "움직임"} 이벤트가 감지되었습니다.`;
-
-    const message = {
-      notification: {
-        title,
-        body
+    // 프론트로 알림 문구 전달
+    return res.status(200).json({
+      message: "이벤트 알림 생성",
+      notification: alertText,
+      raw: {
+        event_type,
+        event_time,
       },
-      token: user.fcm_token,
-    };
-
-    await admin.messaging().send(message);
-
-    res.status(200).json({
-      message: "알림 전송 완료",
-      sent_to: user.fcm_token,
     });
-  } catch (error) {
-    console.error("sendNotification Error:", error);
-    res.status(500).json({ message: "알림 전송 실패", error: error.message });
+  } catch (err) {
+    console.error("sendEventNotification error:", err);
+    return res.status(500).json({ message: "알림 생성 실패" });
   }
 };
