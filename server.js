@@ -21,12 +21,15 @@ import graphRoutes from "./routes/graphRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import modelRoutes from "./routes/modelRoutes.js";
 
+// 🔹 WebSocket 초기화 함수
+import { initWebSocket } from "./utils/wsServer.js";
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// JSON 설정 (중복 제거)
+// JSON 설정: 큰 base64 이미지 받으려면 limit 키우는 거 유지
 app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
@@ -48,6 +51,9 @@ app.use("/api/model", modelRoutes);
 swaggerSetup(app);
 
 const server = http.createServer(app);
+
+// 🔥 여기서 WebSocket 서버 초기화 (단 한 번)
+initWebSocket(server);
 
 server.listen(PORT, () => {
   console.log(`✅ 서버 실행 중: http://localhost:${PORT}`);
