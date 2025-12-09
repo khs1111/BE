@@ -16,24 +16,24 @@ function getDateRanges(date) {
   return { nightStart, nightEnd, napStart, napEnd };
 }
 
-const getTotalSleepTime = async (babyId, date) => {
+const getTotalSleepTime = async (userId, date) => {
   const { nightStart, nightEnd } = getDateRanges(date);
   const [records] = await db.execute(
     `SELECT sleep_start, sleep_end FROM baby_records
      WHERE user_id = ? AND sleep_start BETWEEN ? AND ?`,
-    [babyId, nightStart, nightEnd]
+    [userId, nightStart, nightEnd]
   );
   let total = 0;
   for (const r of records) total += getSleepDuration(r.sleep_start, r.sleep_end);
   return Math.floor(total / 60);
 };
 
-const getNapTime = async (babyId, date) => {
+const getNapTime = async (userId, date) => {
   const { napStart, napEnd } = getDateRanges(date);
   const [records] = await db.execute(
     `SELECT sleep_start, sleep_end FROM baby_records
      WHERE user_id = ? AND sleep_start BETWEEN ? AND ?`,
-    [babyId, napStart, napEnd]
+    [userId, napStart, napEnd]
   );
   let total = 0;
   for (const r of records) total += getSleepDuration(r.sleep_start, r.sleep_end);
@@ -70,12 +70,12 @@ const getMovementCount = async (userId, date) => {
   return rows[0]?.event_count ?? 0;
 };
 
-const getSleepQuality = async (babyId, date) => {
+const getSleepQuality = async (userId, date) => {
   const { nightStart, nightEnd } = getDateRanges(date);
   const [scores] = await db.execute(
     `SELECT score FROM health_reports
      WHERE user_id = ? AND report_date BETWEEN ? AND ?`,
-    [babyId, nightStart, nightEnd]
+    [userId, nightStart, nightEnd]
   );
 
   const total = scores.reduce((sum, r) => sum + r.score, 0);

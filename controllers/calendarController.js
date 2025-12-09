@@ -8,16 +8,16 @@ import {
 
 const getBabySleepStats = async (req, res) => {
   try {
-    const { babyId, date } = req.query;
-    if (!babyId || !date) {
-      return res.status(400).json({ error: 'babyId와 date는 필수입니다.' });
+    const { userId, date } = req.query;
+    if (!userId || !date) {
+      return res.status(400).json({ error: 'userId와 date는 필수입니다.' });
     }
 
-    const totalSleepTime = await getTotalSleepTime(babyId, date);
-    const napTime = await getNapTime(babyId, date);
-    const fallCount = await getFallCount(babyId, date);
-    const movementCount = await getMovementCount(babyId, date);
-    const sleepQuality = await getSleepQuality(babyId, date);
+    const totalSleepTime = await getTotalSleepTime(userId, date);
+    const napTime = await getNapTime(userId, date);
+    const fallCount = await getFallCount(userId, date);
+    const movementCount = await getMovementCount(userId, date);
+    const sleepQuality = await getSleepQuality(userId, date);
 
     return res.status(200).json({
       totalSleepTime,

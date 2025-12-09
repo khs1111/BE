@@ -10,11 +10,11 @@ const router = express.Router();
  *     summary: 아기 수면 통계 조회
  *     parameters:
  *       - in: query
- *         name: babyId
+ *         name: userId
  *         required: true
  *         schema:
  *           type: string
- *         description: 아기 ID
+ *         description: 사용자 ID
  *       - in: query
  *         name: date
  *         required: true
